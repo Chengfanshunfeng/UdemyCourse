@@ -1,0 +1,29 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerJumpState : PlayerState
+{
+    //每次只触发了一种状态，但跳跃状态继承了地面状态的
+    public PlayerJumpState(Player _player, PlayerStateMachine _stateMachine, string _animBoolName) : base(_player, _stateMachine, _animBoolName)
+    {
+    }
+    public override void Enter()
+    {
+        base.Enter();
+        rb.velocity = new Vector2(rb.velocity.x, player.jumpForce);
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        if(rb.velocity.y < 0)
+            stateMachine.ChangeState(player.airState);
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "files.exclude":
+    {
+        "**/.DS_Store": true,
+        "**/.git": true,
+        "**/.hg": true,
+        "**/*.json": true,
+        "**/.svn": true,
+        "**/*.aseprite": true,
+        "**/*.asset": true,
+        "**/*.inputactions": true,
+        "**/*.meta": true,
+        "**/*.prefab": true,
+        "**/*.scene": true,
+        "**/*.scenetemplate": true,
+        "**/CVS": true,
+        "**/Thumbs.db": true,
+        "**/*.log": true,
+        "**/*.cache": true,
+    },
+    "dotnet.preferCSharpExtension": true
+}

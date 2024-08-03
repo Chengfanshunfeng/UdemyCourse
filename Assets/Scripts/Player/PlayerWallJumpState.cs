@@ -1,0 +1,32 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerWallJumpState : PlayerState
+{
+    public PlayerWallJumpState(Player _player, PlayerStateMachine _stateMachine, string _animBoolName) : base(_player, _stateMachine, _animBoolName)
+    {
+    }
+
+    public override void Enter()
+    {
+        base.Enter();
+        stateTimer = .4f;
+        //5 * -player.facingDir是跳跃过程的速度，player.jumpForce是跳跃高度
+        player.SetVelocity(5 * -player.facingDir, player.jumpForce);
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        if(stateTimer<0)
+            stateMachine.ChangeState(player.airState);
+        if(player.IsGroundDetected())
+            stateMachine.ChangeState(player.idolState);
+    }
+}

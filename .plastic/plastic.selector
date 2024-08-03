@@ -1,0 +1,4 @@
+repository "Rpg Udemy Course@chengfanyouzi@cloud.cn"
+  path "/"
+    br "/main"
+    co "/main"
