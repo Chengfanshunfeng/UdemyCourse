@@ -5,9 +5,9 @@ using UnityEngine;
 
 public class Blackhole_HotKey_Controller : MonoBehaviour
 {
-    private SpriteRenderer sr;
+    private SpriteRenderer sr;//用于按下键后使透明度变为0
     private KeyCode myHotKey;
-    private TextMeshProUGUI myText;
+    private TextMeshProUGUI myText;//用于显示字母
 
     private Transform myEnemy;
     private Blackhole_Skill_Controller blackHole;
