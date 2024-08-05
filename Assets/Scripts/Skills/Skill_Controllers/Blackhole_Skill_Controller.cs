@@ -12,6 +12,7 @@ public class Blackhole_Skill_Controller : MonoBehaviour
     public float growSpeed;
     public bool canGrow;
 
+    public int amountOfAttacks = 4;
 
     private List<Transform> targets = new List<Transform>();
 
