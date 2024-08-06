@@ -28,7 +28,7 @@ public class Blackhole_HotKey_Controller : MonoBehaviour
     {
         if (Input.GetKeyDown(myHotKey))
         {
-            blackHole.AddEnemyToList(myEnemy);
+            blackHole.AddEnemyToList(myEnemy);//增加敌人的坐标
 
             myText.color = Color.clear;
             sr.color = Color.clear;
