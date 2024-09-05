@@ -1,21 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting.Dependencies.Sqlite;
 using UnityEditor;
 using UnityEngine;
 
 public class Blackhole_Skill_Controller : MonoBehaviour
 {
     [SerializeField] private GameObject hotKeyPrefab;//热键预制体
-    [SerializeField] private List<KeyCode> keyCodeList;
+    [SerializeField] private List<KeyCode> keyCodeList;//按键列表用List<KeyCode>
 
     public float maxSize;
     public float growSpeed;
     public float shrinkSpeed;
+    private float blackholeTimer;
 
     private bool canGrow = true;
     private bool canShrink;
     private bool canCreateHotKeys = true;
     private bool cloneAttackReleased;//是否可以执行克隆攻击
+    private bool playerCanDisapear=true;
 
     private int amountOfAttacks = 4;
     private float cloneAttackCooldown = .3f;
@@ -24,18 +27,35 @@ public class Blackhole_Skill_Controller : MonoBehaviour
     private List<Transform> targets = new List<Transform>();
     private List<GameObject> createdHotKey = new List<GameObject>();
 
-    public void SetupBlackhole(float _maxSize, float _growSpeed, float _shrinkSpeed, int _amountOfAttacks, float _cloneAttackCooldown)
+    public bool playerCanExitState { get;private set; }
+
+    public void SetupBlackhole(float _maxSize, float _growSpeed, float _shrinkSpeed, int _amountOfAttacks, float _cloneAttackCooldown,float _blackholeDuration)
     {
         maxSize = _maxSize;
         growSpeed = _growSpeed;
         shrinkSpeed = _shrinkSpeed;
         amountOfAttacks = _amountOfAttacks;
         cloneAttackCooldown = _cloneAttackCooldown;
+
+        blackholeTimer = _blackholeDuration;
+
+        if(SkillManager.instance.clone.crystalInseadOfClone)//黑洞技能如果是释放水晶则玩家不会消失
+            playerCanDisapear = false;
     }
     private void Update()
     {
         cloneAttackTimer -= Time.deltaTime;
+        blackholeTimer -= Time.deltaTime;
 
+        if(blackholeTimer < 0)
+        {
+            blackholeTimer = Mathf.Infinity;//设置为无限后在设置黑洞方法后才会小于零
+
+            if(targets.Count > 0)
+                ReleaseCloneAttack();
+            else
+                FinishBlackHoleAbility();
+        }
 
         if (Input.GetKeyDown(KeyCode.R))
         {
@@ -44,12 +64,12 @@ public class Blackhole_Skill_Controller : MonoBehaviour
 
         CloneAttackLogic();
 
-        if (canGrow && !canShrink)
+        if (canGrow && !canShrink)//黑洞变大
         {
-            transform.localScale = Vector2.Lerp(transform.localScale, new Vector2(maxSize, maxSize), growSpeed * Time.deltaTime);
+            transform.localScale = Vector2.Lerp(transform.localScale, new Vector2(maxSize, maxSize), growSpeed * Time.deltaTime);//使用Lerp使黑洞的变化呈线性状态
         }
 
-        if (canShrink)
+        if (canShrink)//黑洞变小
         {
             transform.localScale = Vector2.Lerp(transform.localScale, new Vector2(-1, -1), shrinkSpeed * Time.deltaTime);
 
@@ -59,38 +79,65 @@ public class Blackhole_Skill_Controller : MonoBehaviour
 
     }
 
-    private void ReleaseCloneAttack()
+    private void ReleaseCloneAttack()//释放克隆攻击
     {
+        if(targets.Count <= 0)//没有敌人不释放攻击
+            return;
+
         DestroyHotKeys();
         cloneAttackReleased = true;
         canCreateHotKeys = false;
+
+        if(playerCanDisapear)//玩家消失处理
+        {
+            playerCanDisapear = false;
+            PlayerManager.instance.player.MakeTransparent(true);
+        }
     }
 
     private void CloneAttackLogic()
     {
-        if (cloneAttackTimer < 0 && cloneAttackReleased)
+        if (cloneAttackTimer < 0 && cloneAttackReleased && amountOfAttacks > 0)
         {
             cloneAttackTimer = cloneAttackCooldown;
 
             int randomIndex = Random.Range(0, targets.Count);
 
             float xOffset;
-            if (Random.Range(0, 100) > 50)
+            if (Random.Range(0, 100) > 50)//引用随机数设置偏移
                 xOffset = 2;
             else
                 xOffset = -2;
 
-            SkillManager.instance.clone.CreateClone(targets[randomIndex], new Vector3(xOffset, 0));
+            if(SkillManager.instance.clone.crystalInseadOfClone)//创造水晶攻击
+            {
+                SkillManager.instance.crystal.CreateCrystal();
+                SkillManager.instance.crystal.currentCrystalChooseRandomTarget();//在另一个脚本中修改了通过CreateCrystal()修改的closestTarget
+            }
+            else//创造分身攻击
+            {
+                SkillManager.instance.clone.CreateClone(targets[randomIndex], new Vector3(xOffset, 0));
+            }
+
             amountOfAttacks--;
+
             if (amountOfAttacks <= 0)
             {
-                canShrink = true;
-                cloneAttackReleased = false;
+                Invoke("FinishBlackHoleAbility",1f);//在一秒后执行
             }
         }
     }
 
-    private void DestroyHotKeys()
+    private void FinishBlackHoleAbility()
+    {
+        DestroyHotKeys();
+        playerCanExitState = true;
+        canShrink = true;//黑洞变小
+        cloneAttackReleased = false;
+
+    }
+
+    private void DestroyHotKeys()//热键销毁
     {
         if(createdHotKey.Count <= 0)
             return;

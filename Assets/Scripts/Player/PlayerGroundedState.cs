@@ -21,15 +21,20 @@ public class PlayerGroundedState : PlayerState
     public override void Update()
     {
         base.Update();
+        if(Input.GetKeyDown(KeyCode.R))
+            stateMachine.ChangeState(player.blackHole);
+
         if(Input.GetKeyDown(KeyCode.Mouse1)&&HasNoSword())
             stateMachine.ChangeState(player.aimSword);
+
         if(Input.GetKeyDown(KeyCode.Q))
             stateMachine.ChangeState(player.counterAttack);
+
         if (Input.GetKey(KeyCode.Mouse0))
         {
             stateMachine.ChangeState(player.primaryAttack);
-
         }
+        
         if(!player.IsGroundDetected())
             stateMachine.ChangeState(player.airState);
 

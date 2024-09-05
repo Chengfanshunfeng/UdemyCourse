@@ -16,7 +16,11 @@ public class Enemy_SkeletonAnimationTriggers : MonoBehaviour
         foreach (var hit in colliders)
         {
             if (hit.GetComponent<Player>() != null)
-                hit.GetComponent<Player>().Damage();
+            {
+                PlayerStats target = hit.GetComponent<PlayerStats>();
+                enemy.stats.DoDamage(target);//获取到玩家面板，把玩家面板传给怪物面板脚本执行造成伤害
+            }
+
         }
     }
     private void OpenCounterWindow() => enemy.OpenConterAttackWindow();

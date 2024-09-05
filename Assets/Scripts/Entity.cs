@@ -8,6 +8,9 @@ public class Entity : MonoBehaviour
     public Animator anim{get;private set;}
     public Rigidbody2D rb{get;private set;}
     public EntityFX fx{get;private set;}
+    public SpriteRenderer sr{get;private set;}
+    public CharacterStats stats{get;private set;}
+    public CapsuleCollider2D cd{get;private set;}
     #endregion
     [Header("Knockback info")]
     [SerializeField] protected Vector2 knockbackDirection;
@@ -22,24 +25,42 @@ public class Entity : MonoBehaviour
     [SerializeField] protected Transform wallCheck;
     [SerializeField] protected float wallCheckDistance;
     [SerializeField] protected LayerMask whatIsGround;
+
     public int facingDir{get;private set;}=1;
     protected bool facingRight = true;
+
+    public System.Action onFlipped;//声明一个翻转事件
+
     protected virtual void Awake()
     {
 
     }
     protected virtual void Start()
     {
-        fx=GetComponentInChildren<EntityFX>();
+        sr=GetComponentInChildren<SpriteRenderer>();//GetComponentInChildren 会先检查当前 GameObject 是否有该组件，如果有则直接返回，否则才会去子物体中查找。
         anim=GetComponentInChildren<Animator>();
         rb=GetComponent<Rigidbody2D>();
+        fx=GetComponent<EntityFX>();//GetComponent只在当前 GameObject 上查找指定类型的组件。
+        stats=GetComponent<CharacterStats>();
+        cd=GetComponent<CapsuleCollider2D>();
     }
 
     protected virtual void Update()
     {
 
     }
-    public virtual void Damage()
+
+    public virtual void SlowEntityBy(float _slowPercentage,float _slowDuration)
+    {
+
+    }
+
+    protected virtual void ReturnDefaultSpeed()
+    {
+        anim.speed = 1;
+    }
+
+    public virtual void DamageEffect()
     {
         fx.StartCoroutine("FlashFX");
         StartCoroutine("HitKnockback");
@@ -81,6 +102,9 @@ public class Entity : MonoBehaviour
         facingDir = facingDir * -1;
         facingRight = !facingRight;
         transform.Rotate(0f,180f,0f);
+
+        if(onFlipped!=null)//检查委托是否为空，如果非空则执行方法
+            onFlipped();
     }
 
     public virtual void FlipController(float _x)
@@ -91,4 +115,17 @@ public class Entity : MonoBehaviour
             Flip();
     }
     #endregion
+
+    public void MakeTransparent(bool _transparent)
+    {
+        if(_transparent)
+            sr.color = Color.clear;
+        else
+            sr.color = Color.white;
+    }
+
+    public virtual void Die()
+    {
+
+    }
 }

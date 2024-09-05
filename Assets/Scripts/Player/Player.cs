@@ -14,10 +14,13 @@ public class Player : Entity
     public float moveSpeed = 12f;
     public float jumpForce ;
     public float swordReturnImpact;//接刀回来的冲击力
+    private float defaultMoveSpeed;
+    private float defaultJumpForce; 
 
     [Header("Dash info")]
     public float dashSpeed;
     public float dashDuration;
+    private float dafaultDashSpeed;
     public float dasDir{get;private set;}
 
 
@@ -41,6 +44,8 @@ public class Player : Entity
 
     public PlayerAimSwordState aimSword{get;private set;}
     public PlayerCatchSwordState catchSword{get;private set;}
+    public PlayerBlackholeState blackHole{get;private set;}
+    public PlayerDeadState deadState{get;private set;}//死亡状态
     #endregion
     protected override void Awake()
     {
@@ -60,6 +65,9 @@ public class Player : Entity
 
         aimSword = new PlayerAimSwordState(this,stateMachine,"AimSword");
         catchSword = new PlayerCatchSwordState(this,stateMachine,"CatchSword");
+        blackHole = new PlayerBlackholeState(this,stateMachine,"Jump");
+
+        deadState = new PlayerDeadState(this,stateMachine,"Die");
     }
     protected override void Start()
     {
@@ -67,14 +75,41 @@ public class Player : Entity
         skill=SkillManager.instance;
         stateMachine.Initialize(idolState);
         
+        defaultMoveSpeed = moveSpeed;
+        defaultJumpForce = jumpForce;
+        dafaultDashSpeed = dashSpeed;
     }
 
 
     protected override void Update()
     {
         base.Update();
+
         stateMachine.currentState.Update();
+
         CheckForDashInput();
+
+        if(Input.GetKeyDown(KeyCode.F))
+            skill.crystal.CanUseSkill();
+    }
+
+    public override void SlowEntityBy(float _slowPercentage, float _slowDuration)//减速
+    {
+        moveSpeed = moveSpeed * (1 - _slowPercentage);
+        jumpForce = jumpForce * (1 - _slowPercentage);
+        dashSpeed = dashSpeed * (1 - _slowPercentage);
+        anim.speed = anim.speed * (1 - _slowPercentage);
+
+        Invoke("ReturnDefaultSpeed", _slowDuration);//在一定时间后恢复速度
+    }
+
+    protected override void ReturnDefaultSpeed()//恢复默认速度，用Invoke运行
+    {
+        base.ReturnDefaultSpeed();
+
+        moveSpeed = defaultMoveSpeed;
+        jumpForce = defaultJumpForce;
+        dashSpeed = dafaultDashSpeed;
     }
 
     public void AssignNewSword(GameObject _newSword)
@@ -86,6 +121,7 @@ public class Player : Entity
         stateMachine.ChangeState(catchSword);
         Destroy(sword);
     }
+
     public IEnumerator BusyFor(float _seconds)
     {
         isBusy = true;
@@ -114,8 +150,13 @@ public class Player : Entity
             
     }
 
+    public override void Die()
+    {
+        base.Die();
+        
+        stateMachine.ChangeState(deadState);
+    }
 
-    
 
 
 }

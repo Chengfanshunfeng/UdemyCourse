@@ -206,7 +206,7 @@ public class Sword_Skill_Controller : MonoBehaviour
 
     private void SwordSkillDamage(Enemy enemy)//造成伤害与冻结怪物
     {
-        enemy.Damage();//造成伤害
+        enemy.DamageEffect();//造成伤害
         enemy.StartCoroutine("FreezeTimer", freezeTimeDuration);
     }
 

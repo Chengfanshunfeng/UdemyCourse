@@ -21,7 +21,7 @@ public class Enemy : Entity
     [HideInInspector] public float lastTimeAttacked;
 
     public EnemyStateMachine stateMachine{get; private set;}
-
+    public string lastAnimBoolName{get; private set;}
     protected override void Awake()
     {
         base.Awake();
@@ -35,6 +35,23 @@ public class Enemy : Entity
         stateMachine.currentState.Update();
         //Debug.Log(IsPlayerDetected().collider.gameObject.name+"I See");
 
+    }
+
+    public virtual void AssignLastAnimName(string _animBoolName)=>lastAnimBoolName = _animBoolName;//只在死亡状态调用lastAnimBoolName
+
+    public override void SlowEntityBy(float _slowPercentage, float _slowDuration)//减速
+    {
+        moveSpeed = moveSpeed * (1-_slowPercentage);
+        anim.speed = anim.speed * (1-_slowPercentage);
+
+        Invoke("ReturnDefaultSpeed", _slowDuration);
+    }
+
+    protected override void ReturnDefaultSpeed()
+    {
+        base.ReturnDefaultSpeed();
+
+        moveSpeed = defaultMoveSpeed;
     }
 
     public virtual void FreezeTime(bool _timeFrozen)//怪物时间冻结

@@ -15,7 +15,12 @@ public class PlayerAnimationTriggers : MonoBehaviour
         foreach(var hit in colliders)
         {
             if(hit.GetComponent<Enemy>()!=null)
-               hit.GetComponent<Enemy>().Damage();
+            {
+                EnemyStats _target = hit.GetComponent<EnemyStats>();
+
+                player.stats.DoDamage(_target);//获取到怪物面板，把怪物面板传给玩家面板脚本执行造成伤害
+
+            }
         }
     }
 
